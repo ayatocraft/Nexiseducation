@@ -178,7 +178,7 @@ function initDB() {
             document.getElementById('room-display').innerText = id;
             document.getElementById('room-controls').innerHTML = `<span class="bg-slate-800 text-white px-3 py-1.5 rounded-lg text-xs font-mono select-all">${id}</span>`;
             if(userData.role === 'teacher') document.getElementById('teacher-tools').classList.remove('hidden');
-            
+        }
             channel = ably.channels.get(`room-${id}`);
             channel.subscribe('message', (msg) => {
     const data = msg.data;
@@ -265,8 +265,7 @@ function initDB() {
         
     
 
-saveMessageToDB(messageData);
-channel.publish('message', messageData);
+
             channel.publish('message', {
                 id: 'msg-' + Date.now(),
                 sender: userData.name,
