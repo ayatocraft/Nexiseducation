@@ -290,7 +290,6 @@ channel.publish('message', messageData);
             document.getElementById('msg-input').value = '';
             clearFile(); // プレビューもクリア
             if(isAssignmentMode) toggleAssignmentMode();
-        }
 
         function submitAssignment(assignmentId) {
             const text = prompt("回答内容を入力（プレビュー中のファイルも一緒に送信されます）");
