@@ -101,16 +101,25 @@
     <script>
         const ABLY_KEY = 'JW3Hvw.fw1o0A:-zV3VatQkBUx-hVmtwFGE6Bwbv_wG4kIoz7LHOKNawY';
         let ably, channel, userData = null, isAssignmentMode = false, submissionsMap = {};
-
+        channel.history({ limit: 100 }, (err, res) => {
+  if (!err && res.items) {
+    res.items.reverse().forEach(m => renderMessage(m.data));
+  }
+});
         // --- プロフィール & 部屋の保存 ---
-        window.onload = () => {
-            const saved = localStorage.getItem('nexis_biz_profile');
-            if (saved) {
-                userData = JSON.parse(saved);
-                startApp();
-                if (userData.room) connectToRoom(userData.room); // 部屋が保存されていれば自動接続
-            }
-        };
+        window.onload = async () => {
+    await initDB();
+
+    const saved = localStorage.getItem('nexis_biz_profile');
+    if (saved) {
+        userData = JSON.parse(saved);
+        startApp();
+        if (userData.room) {
+            connectToRoom(userData.room);
+            loadMessagesFromDB(userData.room);
+        }
+    }
+};
 
         function saveProfile(role) {
             const name = document.getElementById('user-name').value.trim();
