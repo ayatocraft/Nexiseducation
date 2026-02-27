@@ -154,7 +154,11 @@
             channel = ably.channels.get(`room-${id}`);
             channel.subscribe('message', (msg) => renderMessage(msg.data));
             document.getElementById('chat-messages').innerHTML = '';
-            channel.history((err, res) => { if(!err) res.items.reverse().forEach(m => renderMessage(m.data)); });
+           channel.history({ limit: 100 }, (err, res) => {
+  if (!err && res.items) {
+    res.items.reverse().forEach(m => renderMessage(m.data));
+  }
+});
         }
 
         // --- ファイル確認（プレビュー）機能 ---
