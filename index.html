@@ -15,6 +15,11 @@
         .hidden { display: none !important; }
         .preview-box { animation: fadeIn 0.2s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        button:disabled {
+  background-color: #ccc;
+  color: #666;
+  cursor: not-allowed;
+}
     </style>
 </head>
 <body class="bg-slate-50 font-sans text-slate-900">
