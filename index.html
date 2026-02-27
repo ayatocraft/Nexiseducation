@@ -161,7 +161,12 @@
             if(userData.role === 'teacher') document.getElementById('teacher-tools').classList.remove('hidden');
             
             channel = ably.channels.get(`room-${id}`);
-            channel.subscribe('message', (msg) => renderMessage(msg.data));
+            channel.subscribe('message', (msg) => {
+    const data = msg.data;
+    data.room = userData.room; // どの部屋か保存
+    saveMessageToDB(data);
+    renderMessage(data);
+});
             document.getElementById('chat-messages').innerHTML = '';
            channel.history({ limit: 100 }, (err, res) => {
   if (!err && res.items) {
@@ -226,7 +231,20 @@
             const fileData = document.getElementById('pending-file-data').value;
             const fileName = document.getElementById('pending-file-name').value;
             if(!text && !fileData) return;
+           const messageData = {
+    id: 'msg-' + Date.now(),
+    sender: userData.name,
+    role: userData.role,
+    text: text,
+    file: fileData,
+    fileName: fileName,
+    type: isAssignmentMode ? 'ASSIGNMENT' : 'NORMAL',
+    timestamp: new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' }),
+    room: userData.room
+};
 
+saveMessageToDB(messageData);
+channel.publish('message', messageData);
             channel.publish('message', {
                 id: 'msg-' + Date.now(),
                 sender: userData.name,
@@ -338,6 +356,22 @@
           .catch(err => console.log('SW registration failed:', err));
       });
     }
+    function saveMessageToDB(message) {
+    if (!db) return;
+    const tx = db.transaction("messages", "readwrite");
+    const store = tx.objectStore("messages");
+    store.put(message);
+}
+        function loadMessagesFromDB(roomId) {
+    const tx = db.transaction("messages", "readonly");
+    const store = tx.objectStore("messages");
+    const index = store.index("room");
+    const request = index.getAll(roomId);
+
+    request.onsuccess = () => {
+        request.result.forEach(msg => renderMessage(msg));
+    };
+}
     </script>
 </body>
 </html>
