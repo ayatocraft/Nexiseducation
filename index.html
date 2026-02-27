@@ -182,15 +182,10 @@ function initDB() {
             channel = ably.channels.get(`room-${id}`);
             channel.subscribe('message', (msg) => {
     const data = msg.data;
-    data.room = userData.room; // どの部屋か保存
+    data.room = userData.room;
     saveMessageToDB(data);
-    renderMessage(data);
 });
             document.getElementById('chat-messages').innerHTML = '';
-           channel.history({ limit: 100 }, (err, res) => {
-  if (!err && res.items) {
-    res.items.reverse().forEach(m => renderMessage(m.data));
-  }
 });
         }
 
@@ -263,9 +258,6 @@ function initDB() {
         timestamp: new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' }),
         room: userData.room
     };
-
-    saveMessageToDB(messageData);
-    channel.publish('message', messageData);
 
     document.getElementById('msg-input').value = '';
     clearFile();
@@ -388,9 +380,15 @@ channel.publish('message', messageData);
     }
     function saveMessageToDB(message) {
     if (!db) return;
+
     const tx = db.transaction("messages", "readwrite");
     const store = tx.objectStore("messages");
-    store.put(message);
+
+    const request = store.put(message);
+
+    request.onsuccess = () => {
+        renderMessage(message);
+    };
 }
         function loadMessagesFromDB(roomId) {
     const tx = db.transaction("messages", "readonly");
